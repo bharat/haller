@@ -79,19 +79,21 @@ def streaming_cylon(a):
     x = [x['x'] for x in panels]
 
     delta = 50
-    band = min(x)
+    min_x = min(x)
+    max_x = max(x)
+    band = min_x
     while True:
         for p in panels:
             if p['x'] >= band and p['x'] <= band + 200:
                 c = red
             else:
                 c = black
-            s.panel_prepare(p['panelId'], c[0], c[1], c[2], transition_time=8)
+            s.panel_prepare(p['panelId'], c[0], c[1], c[2], transition_time=6)
         s.panel_strobe()
         # Aurora can only handle 10 updates a second.
         time.sleep(.3)
         band += delta
-        if band > max(x) - 3*delta or band < min(x):
+        if band > max_x or band < min_x - 4 * abs(delta):
             delta = -delta
 
 
