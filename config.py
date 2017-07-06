@@ -107,8 +107,8 @@ def rotate(a, args):
     rotated = ndimage.rotate(image, r, order=0, reshape=False)
     for (y, x) in numpy.transpose(numpy.nonzero(rotated)):
         p = panels[rotated[y][x]]
-        p['x'] = int(x) - dim
-        p['y'] = int(y) - dim
+        p['x'] = (int(x) - dim) * 10
+        p['y'] = (int(y) - dim) * 10
         p['o'] = (p['o'] + r) % 360
 
     # Cache the result for the future, along with the rotation we used
