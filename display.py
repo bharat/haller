@@ -8,7 +8,7 @@ import config
 from nanoleaf import Aurora
 
 def streaming_random(a):
-    panel_ids = [x['panelId'] for x in a.panel_positions]
+    panel_ids = [x['panelId'] for x in a.rotated_panel_positions]
     s = a.effect_stream()
 
     brt_delta = 2
@@ -27,61 +27,72 @@ def streaming_random(a):
         if brt >= brt_max or brt <= brt_min:
             brt_delta = -brt_delta
 
-def streaming_flash(a):
-    panel_ids = [x['panelId'] for x in a.panel_positions]
+
+def streaming_pulse(a):
+    panel_ids = [x['panelId'] for x in a.rotated_panel_positions]
     s = a.effect_stream()
 
-    brt_delta = 1
-    brt_max = 90
-    brt_min = 30
-    brt = int((brt_max + brt_min) / 2)
+
+    for p in panel_ids:
+        s.panel_prepare(p, 93, 100, 213, transition_time=0)
+    s.panel_strobe()
+
     while True:
-        a.brightness = brt
-        s.panel_set(random.choice(panel_ids),
-                    random.randint(0, 255),
-                    random.randint(0, 255),
-                    random.randint(0, 255))
-        # Aurora can only handle 10 updates a second.
-        time.sleep(0.2)
-        brt = brt + brt_delta
-        if brt > brt_max or brt < brt_min:
-            brt_delta = -brt_delta
+        a.brightness = random.randint(30, 40)
+        time.sleep(random.uniform(0.1, 1))
+
+        a.brightness = random.randint(50, 80)
+        time.sleep(random.uniform(0.1, 1))
 
 
 def streaming_wipe(a):
-    panel_ids = [x['panelId'] for x in sorted(a.panel_positions, key=lambda k: k['x'])]
+    panel_ids = [x['panelId'] for x in sorted(a.rotated_panel_positions, key=lambda k: k['x'])]
     s = a.effect_stream()
-    a.brightness = 70
 
-    # random
-    c = [
-        (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255)),
-        (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255)),
-        (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
-    ]
-
-    # green
     c = [
         (  0, 255, 0),
-        (  0, 192, 0),
-        (  0, 128, 0),
-        (  0,  64, 0),
-        (  0,   0, 0)
+        (  0, 192, 64),
+        (  0, 128, 128),
+        (  0,  64, 192),
+        (  0,   0, 255)
     ]
 
-    idx = [0,
-           int(len(panel_ids) / len(c)),
-           int(len(panel_ids) / len(c) * 2),
-           int(len(panel_ids) / len(c) * 3),
-           int(len(panel_ids) / len(c) * 4)
-       ]
+    delta = 0
     while True:
         for i in range(len(c)):
-            s.panel_prepare(panel_ids[idx[i]], c[i][0], c[i][1], c[i][2], transition_time=30)
-            idx[i] = (idx[i] + 1) % len(panel_ids)
+            s.panel_prepare(
+                panel_ids[int(len(panel_ids) / len(c) * i + delta) % len(panel_ids)],
+                c[i][0], c[i][1], c[i][2],
+                transition_time=120)
         s.panel_strobe()
         # Aurora can only handle 10 updates a second.
-        time.sleep(.8)
+        time.sleep(2)
+        delta += 1
+
+
+def streaming_cylon(a):
+    panels = a.rotated_panel_positions
+    s = a.effect_stream()
+
+    red = (255, 0, 0)
+    black = (0, 0, 0)
+    x = [x['x'] for x in panels]
+
+    delta = 50
+    band = min(x)
+    while True:
+        for p in panels:
+            if p['x'] >= band and p['x'] <= band + 200:
+                c = red
+            else:
+                c = black
+            s.panel_prepare(p['panelId'], c[0], c[1], c[2], transition_time=1)
+        s.panel_strobe()
+        # Aurora can only handle 10 updates a second.
+        time.sleep(.1)
+        band += delta
+        if band > max(x) - 3*delta or band < min(x):
+            delta = -delta
 
 
 def display(a, args):
