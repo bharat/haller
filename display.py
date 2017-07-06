@@ -86,12 +86,41 @@ def streaming_cylon(a):
                 c = red
             else:
                 c = black
-            s.panel_prepare(p['panelId'], c[0], c[1], c[2], transition_time=1)
+            s.panel_prepare(p['panelId'], c[0], c[1], c[2], transition_time=8)
         s.panel_strobe()
         # Aurora can only handle 10 updates a second.
-        time.sleep(.1)
+        time.sleep(.3)
         band += delta
         if band > max(x) - 3*delta or band < min(x):
+            delta = -delta
+
+
+def streaming_sunrise(a):
+    panels = a.rotated_panel_positions
+    s = a.effect_stream()
+
+    red = (255, 0, 0)
+    yellow = (255, 255, 0)
+    blue = (0, 0, 255)
+    y = [x['y'] for x in panels]
+    mid_y = (min(y) + max(y)) / 2
+
+    delta = 50
+    band = min(y)
+    while True:
+        for p in panels:
+            if p['y'] >= band and p['y'] <= band + 200:
+                c = red
+            elif p['y'] > mid_y:
+                c = blue
+            else:
+                c = yellow
+            s.panel_prepare(p['panelId'], c[0], c[1], c[2], transition_time=3)
+        s.panel_strobe()
+        # Aurora can only handle 10 updates a second.
+        time.sleep(.3)
+        band += delta
+        if band > max(y) - 3*delta or band < min(y):
             delta = -delta
 
 
