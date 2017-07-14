@@ -8,6 +8,85 @@ import config
 from nanoleaf import Aurora
 from random import randint
 
+def streaming_rain(a):
+    panel_ids = [x['panelId'] for x in a.rotated_panel_positions]
+    s = a.effect_stream()
+
+    adjacency = {
+        209: [12],
+        12: [33, 209],
+        33: [49, 12],
+        49: [215, 33, 30],
+        215: [49],
+        30: [49, 138],
+        138: [30, 2],
+        2: [138, 167],
+        167: [2, 66],
+        66: [167, 176],
+        176: [66, 36, 129],
+        36: [176, 172],
+        172: [36],
+        129: [176, 3],
+        3: [107, 129],
+        107: [3, 25],
+        25: [107, 9],
+        9: [25, 127, 78],
+        127: [9, 240],
+        240: [127, 37],
+        37: [240, 90],
+        90: [194, 37],
+        194: [90],
+        78: [9, 68],
+        68: [48, 78],
+        48: [57, 68, 144],
+        57: [48],
+        144: [48, 108],
+        108: [144, 140],
+        140: [108]
+    }
+
+    # set all panels to random colors
+    c = {}
+
+    for p in panel_ids:
+        c[p] = [64, 64, 64]
+    target = sum([sum(x) for x in c.values()])
+
+    # Average the colors of the adjacent panels
+    while True:
+        # average colors for neighbors
+        new_c = {}
+        for p, v in adjacency.items():
+            new_c[p] = [0, 0, 0]
+            for i in range(3):
+                new_c[p][i] = int(sum([c[n][i] for n in v] + [c[p][i]]) / (len(v) + 1))
+        c = new_c
+
+        # randomly drop in a bright raindrop
+        if random.random() > 0.5:
+            p = random.choice(panel_ids)
+            idx = randint(0, 2)
+            c[p] = [0, 0, 0]
+            c[p][idx] = 255
+
+        # update all panels
+        for p in panel_ids:
+            s.panel_prepare(p, c[p][0], c[p][1], c[p][2], transition_time=10)
+        s.panel_strobe()
+
+        # drain the pool back to target saturation
+        total = sum([sum(x) for x in c.values()])
+        to_drain = max(total - target, 0)
+        while to_drain > 0:
+            p = random.choice(panel_ids)
+            for i in range(3):
+                c[p][i] = max(c[p][i] - 1, 0)
+            to_drain -= 3
+
+        time.sleep(1)
+
+
+
 def streaming_random(a):
     panel_ids = [x['panelId'] for x in a.rotated_panel_positions]
     s = a.effect_stream()
@@ -69,64 +148,113 @@ def streaming_spread(a):
         sequence.reverse()
 
 
+def streaming_mesmer(a):
+    s = a.effect_stream()
+
+    sequence = [
+        [129],
+        [3, 176],
+        [107, 66, 36],
+        [172, 167, 25],
+        [2, 9],
+        [138, 78, 127],
+        [30, 68, 240],
+        [48, 37, 49],
+        [215, 33, 57, 144, 90],
+        [194, 108, 12],
+        [209, 140]
+    ]
+    colors = [[0, 0, 0]] * len(sequence)
+    mutate_multiplier = [1, 1, 1]
+    c = [random.randint(0, 2)*10 + 40, random.randint(0, 2) * 10 + 120, random.randint(0, 2) * 10 + 180]
+    mutate_index = 0
+    gen = 0
+    mutate_amount = 0
+    while True:
+        gen += 1
+        if gen % 2 == 0:
+            mutate_index = (mutate_index + 1) % 3
+            if c[mutate_index] == 250:
+                mutate_multiplier[mutate_index] = -1
+            elif c[mutate_index] == 10:
+                mutate_multiplier[mutate_index] = 1
+            mutate_amount = 10*mutate_multiplier[mutate_index]
+            c[mutate_index] = max(min(c[mutate_index] + mutate_amount, 255), 0)
+        colors.insert(0, list(c))
+        del(colors[len(sequence):])
+
+        for i, group in enumerate(sequence):
+            for panel_id in group:
+                s.panel_prepare(panel_id, colors[i][0], colors[i][1], colors[i][2],
+                                transition_time=1)
+            s.panel_strobe()
+        time.sleep(0.2)
+
+
 def streaming_conway(a):
     panel_ids = [x['panelId'] for x in a.rotated_panel_positions]
     s = a.effect_stream()
 
-    for p in panel_ids:
-        s.panel_prepare(p, 0, 0, 0, transition_time=0)
+    for panel in panel_ids:
+        s.panel_prepare(panel, 0, 0, 0, transition_time=0)
     s.panel_strobe()
-    adjacency = {209: [12, 0, 0],
-                 12: [33, 209, 0, 0],
-                 33: [49, 12, 0, 0],
-                 49: [215, 33, 30, 0, 0],
-                 215: [49, 0, 0],
-                 30: [49, 138, 0, 0],
-                 138: [30, 2, 0, 0],
-                 2: [138, 167, 0, 0],
-                 167: [2, 66, 0, 0],
-                 66: [167, 176, 0, 0],
-                 176: [66, 36, 129, 0, 0],
-                 36: [176, 172, 0, 0],
-                 172: [36, 0, 0],
-                 129: [176, 3, 0, 0],
-                 3: [107, 129, 0, 0],
-                 107: [3, 25, 0, 0],
-                 25: [107, 9, 0, 0],
-                 9: [25, 127, 78, 0, 0],
-                 127: [9, 240, 0, 0],
-                 240: [127, 37, 0, 0],
-                 37: [240, 90, 0, 0],
-                 90: [194, 37, 0, 0],
-                 194: [90, 0, 0],
-                 78: [9, 68, 0, 0],
-                 68: [48, 78, 0, 0],
-                 48: [57, 68, 144, 0, 0],
-                 57: [48, 0, 0],
-                 144: [48, 108, 0, 0],
-                 108: [144, 140, 0, 0],
-                 140: [108, 0, 0]}
+    adjacency = {
+        209: [12],
+        12: [33, 209],
+        33: [49, 12],
+        49: [215, 33, 30],
+        215: [49],
+        30: [49, 138],
+        138: [30, 2],
+        2: [138, 167],
+        167: [2, 66],
+        66: [167, 176],
+        176: [66, 36, 129],
+        36: [176, 172],
+        172: [36],
+        129: [176, 3],
+        3: [107, 129],
+        107: [3, 25],
+        25: [107, 9],
+        9: [25, 127, 78],
+        127: [9, 240],
+        240: [127, 37],
+        37: [240, 90],
+        90: [194, 37],
+        194: [90],
+        78: [9, 68],
+        68: [48, 78],
+        48: [57, 68, 144],
+        57: [48],
+        144: [48, 108],
+        108: [144, 140],
+        140: [108]
+    }
+    state = {}
+    for panel in panel_ids:
+        state[panel] = [0, 0]
+
     start_panel = random.choice(panel_ids)
     s.panel_prepare(start_panel, 255, 131, 0, transition_time = 0)
-    adjacency[start_panel][-1] = 1
+    state[start_panel][0] = 1
     s.panel_strobe()
     time.sleep(1)
     while True:
-        for p in panel_ids:
-            if adjacency[p][len(adjacency[p])-1] == 1:
-                for i in range(0, len(adjacency[p])-2):
-                    adjacency[adjacency[p][i]][len(adjacency[adjacency[p][i]])-2] += 1
-        for p in panel_ids:
-            if adjacency[p][len(adjacency[p])-2] == 1:
-                adjacency[p][len(adjacency[p])-1] = 1
-                s.panel_prepare(p, 255, 131, 0, transition_time = 1)
+        for panel in panel_ids:
+            if state[panel][0] == 1:
+                for adjacent_panel in adjacency[panel]:
+                    state[adjacent_panel][1] += 1
+        for panel in panel_ids:
+            if state[panel][1] == 1:
+                state[panel][0] = 1
+                s.panel_prepare(panel, 255, 131, 0, transition_time = 1)
             else:
-                s.panel_prepare(p, 0, 0, 0, transition_time = 1)
-                adjacency[p][len(adjacency[p])-1] = 0
+                s.panel_prepare(panel, 0, 0, 0, transition_time = 1)
+                state[panel][0] = 0
         s.panel_strobe()
         time.sleep(1)
-        for p in panel_ids:
-            adjacency[p][len(adjacency[p])-2] = 0
+        for panel in panel_ids:
+            state[panel][1] = 0
 
 def streaming_eq(a):
     panel_ids = [x['panelId'] for x in a.rotated_panel_positions]
