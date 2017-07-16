@@ -6,7 +6,7 @@ import time
 
 import config
 from nanoleaf import Aurora
-from random import randint
+from random import randint, choice
 
 def streaming_rain(a):
     panel_ids = [x['panelId'] for x in a.rotated_panel_positions]
@@ -48,9 +48,19 @@ def streaming_rain(a):
     # set all panels to random colors
     c = {}
 
+    orig = 48
     for p in panel_ids:
-        c[p] = [64, 64, 64]
+        c[p] = [orig] * 3
     target = sum([sum(x) for x in c.values()])
+
+    drops = [
+        [255,   0,   0],
+        [255, 255,   0],
+        [255,   0, 255],
+        [0,   255,   0],
+        [0,   255, 255],
+        [0,     0, 255]
+    ]
 
     # Average the colors of the adjacent panels
     while True:
@@ -62,29 +72,30 @@ def streaming_rain(a):
                 new_c[p][i] = int(sum([c[n][i] for n in v] + [c[p][i]]) / (len(v) + 1))
         c = new_c
 
-        # randomly drop in a bright raindrop
+        # default transition time is 1 second
+        tt = {p: 10 for p in panel_ids}
+
+        # randomly drop in a raindrop
         if random.random() > 0.5:
-            p = random.choice(panel_ids)
-            idx = randint(0, 2)
-            c[p] = [0, 0, 0]
-            c[p][idx] = 255
+            p = choice(panel_ids)
+            c[p] = choice(drops)
+            tt[p] = 0
 
         # update all panels
         for p in panel_ids:
-            s.panel_prepare(p, c[p][0], c[p][1], c[p][2], transition_time=10)
+            s.panel_prepare(p, c[p][0], c[p][1], c[p][2], transition_time=tt[p])
         s.panel_strobe()
 
         # drain the pool back to target saturation
         total = sum([sum(x) for x in c.values()])
         to_drain = max(total - target, 0)
         while to_drain > 0:
-            p = random.choice(panel_ids)
-            for i in range(3):
-                c[p][i] = max(c[p][i] - 1, 0)
-            to_drain -= 3
-
+            p = choice(panel_ids)
+            i = choice([0, 1, 2])
+            if c[p][i] > orig:
+                c[p][i] -= 1
+                to_drain -= 1
         time.sleep(1)
-
 
 
 def streaming_random(a):
@@ -133,7 +144,7 @@ def streaming_spread(a):
     mutate_index = 0
     while True:
         mutate_index = (mutate_index + 1) % 3
-        mutate_amount = random.choice([-60, 60])
+        mutate_amount = choice([-60, 60])
         if c[mutate_index] == 250:
             mutate_amount = -60
         elif c[mutate_index] == 10:
@@ -147,6 +158,18 @@ def streaming_spread(a):
             time.sleep(.3)
         sequence.reverse()
 
+def streaming_epilepsy(a):
+    s = a.effect_stream()
+    panel_ids = [x['panelId'] for x in a.rotated_panel_positions]
+    while True:
+        for p in panel_ids:
+            s.panel_prepare(p, 255, 255, 255, transition_time = 0)
+        s.panel_strobe()
+        time.sleep(.1)
+        for p in panel_ids:
+            s.panel_prepare(p, 0, 0, 0, transition_time = 0)
+        s.panel_strobe()
+        time.sleep(.1)
 
 def streaming_mesmer(a):
     s = a.effect_stream()
@@ -166,7 +189,10 @@ def streaming_mesmer(a):
     ]
     colors = [[0, 0, 0]] * len(sequence)
     mutate_multiplier = [1, 1, 1]
-    c = [random.randint(0, 2)*10 + 40, random.randint(0, 2) * 10 + 120, random.randint(0, 2) * 10 + 180]
+    c = [0, 0, 0]
+    color_starter = random.randint(0, 2)
+    for i in range (0, 2):
+        c[(i + color_starter)%3] = random.randint(0, 2) * 10 + (i + 1) * 60
     mutate_index = 0
     gen = 0
     mutate_amount = 0
@@ -234,7 +260,7 @@ def streaming_conway(a):
     for panel in panel_ids:
         state[panel] = [0, 0]
 
-    start_panel = random.choice(panel_ids)
+    start_panel = choice(panel_ids)
     s.panel_prepare(start_panel, 255, 131, 0, transition_time = 0)
     state[start_panel][0] = 1
     s.panel_strobe()
