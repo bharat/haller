@@ -37,22 +37,18 @@ def viz_amplitude(a):
                     input=True,
                     frames_per_buffer=chunk_size)
 
-    peaks = deque(maxlen=100)
     last_strobe = time.time()
     noise_floor = 2500
     while True:
         data = np.fromstring(stream.read(chunk_size),dtype=np.int16)
         now = time.time()
 
-        if now - last_strobe < .1:
+        if now - last_strobe < 0.1:
             continue
 
         max_amplitude = np.amax(np.absolute(data))
-        peaks.append(max_amplitude)
-        max_peak = (sum(peaks) / len(peaks) * 1.5)
         max_amplitude = max(max_amplitude - noise_floor, 0)
-        thresh = max_amplitude / 2**14 # max_peak
-        print(max_amplitude, max_peak)
+        thresh = max_amplitude / 2**14
 
         for (i, panel_id) in enumerate(panel_ids):
             if i / len(panel_ids) < thresh:
@@ -62,6 +58,7 @@ def viz_amplitude(a):
                 s.panel_prepare(panel_id, 0, 0, 0, transition_time=5)
 
         s.panel_strobe()
+        #print(now - last_strobe)
         last_strobe = now
 
 
