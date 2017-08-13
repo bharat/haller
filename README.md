@@ -2,8 +2,7 @@
 Fun with Nanoleaf Aurora
 
 ## What is it?
-Haller is a wrapper around https://github.com/software-2/nanoleaf that provides some additional, higher level functionality to control
-your Nanoleaf Aurora
+Haller is a wrapper around https://github.com/bharat/nanoleaf (a fork of https://github.com/software-2/nanoleaf) that provides some additional, higher level functionality to control your Nanoleaf Aurora
 
 ## How do I use it?
 
@@ -25,3 +24,7 @@ your Nanoleaf Aurora
 ### Streaming
 
 This uses the `External Control` feature of Aurora to allow dynamic effects. There are a few hardcoded ones, but the code is an example for what you can do. Try `display.py --streaming wipe` to see one of them.
+
+### Visualization
+
+Using the streaming interface, you can turn your Aurora into a music visualizer. Try `visualizer.py --viz amplitude` for yourself. You can see what it looks like here: https://www.youtube.com/watch?v=nnojsRrwK4c
