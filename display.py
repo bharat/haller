@@ -282,53 +282,6 @@ def streaming_conway(a):
         for panel in panel_ids:
             state[panel][1] = 0
 
-def streaming_eq(a):
-    panel_ids = [x['panelId'] for x in a.rotated_panel_positions]
-    s = a.effect_stream()
-
-    for p in panel_ids:
-        s.panel_prepare(p, 0, 0, 0, transition_time=0)
-
-    sequence = [
-        [129],
-        [3, 176],
-        [107, 66, 36],
-        [172, 167, 25],
-        [2, 9],
-        [138, 78, 127],
-        [30, 68, 240],
-        [48, 37, 49],
-        [215, 33, 57, 144, 90],
-        [194, 108, 12],
-        [209, 140]
-    ]
-
-    delta = [
-        0, 1, 1, 0, -1, -1, 0, 1, 1, 0, 1, 1, -1, -1, 0, 0, 1, 1, -4,
-        5, 1, 1, 1, -1, -1, -1, -1, -4
-    ]
-
-    m = len(sequence) - 1
-    white = [255, 255, 255]
-    black = [0, 0, 0]
-    level = randint(0, m)
-    d = 0
-
-    while True:
-        if random.random() > 0.6:
-            level += delta[d]
-            d = (d + 1) % len(delta)
-
-        for i in range(0, m + 1):
-            if i <= level:
-                c = white
-            else:
-                c = black
-            for panel_id in sequence[i]:
-                s.panel_prepare(panel_id, c[0], c[1], c[2], transition_time=1)
-            s.panel_strobe()
-        time.sleep(.1)
-
 
 def streaming_dimmer(a):
     panel_ids = [x['panelId'] for x in a.rotated_panel_positions]
