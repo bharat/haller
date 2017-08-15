@@ -106,7 +106,7 @@ def viz_freq(a):
             now = time.time()
             elapsed = now - last_strobe
 
-            if elapsed < 0.1:
+            if elapsed < 0.09:
                 chan1 += np.fromstring(stream.read(chunk_size),dtype=np.int16)
             else:
                 break
@@ -137,20 +137,16 @@ def viz_freq(a):
 
         # Create 8 bins
         bins = power[:int(chan1_size/2)].reshape(8, -1).mean(1)
-        # print("> ", ["%0.5f " % x for x in bins])
-
-        # Map bins to colors
-        bin_colors = ((1000 * bins).clip(0, 1) * (len(colors) - 1)).astype(int)
-        # print("  ", ["%0.5f " % x for x in bin_colors])
+        # print("  ", ["%0.5f " % x for x in bins])
 
         # Strobe our panels according to bin energy
         per_bin = len(panel_ids) / len(colors)
         for (i, panel_id) in enumerate(panel_ids):
             bin_index = int(i // per_bin)
             bs = bins[bin_index]
-            if bs > 0.000: # is this bin active enough?
+            if bs > 0.00005: # is this bin active enough?
                 # print (i, bin_index, bs, bin_colors[bin_index], colors[bin_colors[bin_index]])
-                c = colors[bin_colors[bin_index]]
+                c = colors[bin_index]
                 #print(c)
                 s.panel_prepare(panel_id, c[0], c[1], c[2], transition_time=0)
             else:
