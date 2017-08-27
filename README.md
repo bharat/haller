@@ -30,7 +30,7 @@ By default your Aurora will have an arbitrary orientation. You can control that 
 1. `config.py --rotate <degrees>` will calculate a new rotation of your panel layout. Use this with `--plot` to visualize to make sure that your panel rotation matches your physical layout. The results of this rotation are cached in `aurora.ini` for the future.
 
 Here's what a sample plot looks like:
-[[https://raw.githubusercontent.com/bharat/haller/master/screenshots/plot.png|alt=plot]]
+![Aurora Plot](screenshots/plot.png "This is a screenshot of my Aurora setup after I've rotated it")
 
 ### Effects
 1. `effect.py --list` to list all effects
