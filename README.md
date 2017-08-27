@@ -4,11 +4,22 @@ Fun with Nanoleaf Aurora
 ## What is it?
 Haller is a wrapper around https://github.com/bharat/nanoleaf (a fork of https://github.com/software-2/nanoleaf) that provides some additional, higher level functionality to control your Nanoleaf Aurora
 
+## What can it do?
+1. automatically find and connect to your Aurora
+1. Turn on/off your Aurora from a script
+1. Handle rotation of your Aurora (so that you can script "left to right" type effects)
+1. Real-time display effects (including some samples)
+1. Audio visualization effects (including some samples)
+
 ## How do I use it?
 
-### Configuration
+### Requirements
+1. Python3
+1. Python modules: bokeh, pyaudio, numpy, scipy
 
-#### Haller can automatically find and connect to your Aurora.
+### Quick start
+1. `git clone git@github.com:bharat/nanoleaf.git` inside the haller directory
+1. `pip3 install bokeh pyaudio numpy scipy`
 1. Hit the pairing button on your Aurora
 1. run `config.py`. It will discover your Aurora, pair with it and create a file called `aurora.ini` containing config data.
 
