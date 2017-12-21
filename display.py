@@ -3,9 +3,10 @@ import argparse
 import random
 import sys
 import time
+import webcolors
 
 import config
-from nanoleaf import Aurora
+from nanoleaf.aurora import Aurora
 from random import randint, choice
 
 def streaming_rain(a):
@@ -383,16 +384,35 @@ def streaming_sunrise(a):
             delta = -delta
 
 
+def streaming_fill(a, args):
+    panels = a.rotated_panel_positions
+    s = a.effect_stream()
+
+    for color in args.colors:
+        color = webcolors.name_to_rgb(color)
+        panel_ids = [x['panelId'] for x in sorted(a.rotated_panel_positions, key=lambda k: k['y'])]
+
+        for (i, p_id) in enumerate(panel_ids):
+            s.panel_prepare(p_id, color[0], color[1], color[2], transition_time=int((i / 10)*5))
+            s.panel_strobe()
+
+        time.sleep(2.5)
+
+    for (i, p_id) in enumerate(reversed(panel_ids)):
+        s.panel_set(p_id, 0, 0, 0, transition_time=int((i / 10)*5))
+
+
 def display(a, args):
     fn = 'streaming_%s' % args.streaming
     if fn in globals():
-        globals()[fn](a)
+        globals()[fn](a, args)
     else:
         print('No such display effect: %s' % args.streaming)
 
 def main(argv=None):
     parser = argparse.ArgumentParser()
     parser.add_argument('--streaming', dest='streaming')
+    parser.add_argument('--colors', nargs='*')
     args = parser.parse_args()
 
     aurora = config.aurora()
