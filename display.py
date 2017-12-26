@@ -6,10 +6,10 @@ import time
 import webcolors
 
 import config
-from nanoleaf.aurora import Aurora
+from nanoleaf.nanoleaf.aurora import Aurora
 from random import randint, choice
 
-def streaming_rain(a):
+def streaming_rain(a, args):
     panel_ids = [x['panelId'] for x in a.rotated_panel_positions]
     s = a.effect_stream()
 
@@ -99,7 +99,7 @@ def streaming_rain(a):
         time.sleep(1)
 
 
-def streaming_random(a):
+def streaming_random(a, args):
     panel_ids = [x['panelId'] for x in a.rotated_panel_positions]
     s = a.effect_stream()
 
@@ -120,7 +120,7 @@ def streaming_random(a):
             brt_delta = -brt_delta
 
 
-def streaming_spread(a):
+def streaming_spread(a, args):
     panel_ids = [x['panelId'] for x in a.rotated_panel_positions]
     s = a.effect_stream()
 
@@ -159,7 +159,7 @@ def streaming_spread(a):
             time.sleep(.3)
         sequence.reverse()
 
-def streaming_epilepsy(a):
+def streaming_epilepsy(a, args):
     s = a.effect_stream()
     panel_ids = [x['panelId'] for x in a.rotated_panel_positions]
     while True:
@@ -172,7 +172,7 @@ def streaming_epilepsy(a):
         s.panel_strobe()
         time.sleep(.1)
 
-def streaming_mesmer(a):
+def streaming_mesmer(a, args):
     s = a.effect_stream()
 
     sequence = [
@@ -218,7 +218,7 @@ def streaming_mesmer(a):
         time.sleep(0.2)
 
 
-def streaming_conway(a):
+def streaming_conway(a, args):
     panel_ids = [x['panelId'] for x in a.rotated_panel_positions]
     s = a.effect_stream()
 
@@ -284,7 +284,7 @@ def streaming_conway(a):
             state[panel][1] = 0
 
 
-def streaming_dimmer(a):
+def streaming_dimmer(a, args):
     panel_ids = [x['panelId'] for x in a.rotated_panel_positions]
     s = a.effect_stream()
 
@@ -301,7 +301,7 @@ def streaming_dimmer(a):
         time.sleep(random.uniform(0.1, 1))
 
 
-def streaming_wipe(a):
+def streaming_wipe(a, args):
     panel_ids = [x['panelId'] for x in sorted(a.rotated_panel_positions, key=lambda k: k['x'])]
     s = a.effect_stream()
 
@@ -326,7 +326,7 @@ def streaming_wipe(a):
         delta += 1
 
 
-def streaming_cylon(a):
+def streaming_cylon(a, args):
     panels = a.rotated_panel_positions
     s = a.effect_stream()
 
@@ -355,7 +355,7 @@ def streaming_cylon(a):
             delta = -delta
 
 
-def streaming_sunrise(a):
+def streaming_sunrise(a, args):
     panels = a.rotated_panel_positions
     s = a.effect_stream()
 

@@ -11,8 +11,7 @@ from bokeh.models import ColumnDataSource, DataRange1d, Plot, LinearAxis, Grid
 from bokeh.models.glyphs import Text
 from scipy import ndimage
 
-from nanoleaf import Aurora
-from nanoleaf import setup
+from nanoleaf.nanoleaf.aurora import Aurora
 
 class AuroraWrapper(Aurora):
     def __init__(self, config):

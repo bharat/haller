@@ -8,7 +8,7 @@ import numpy as np
 import config
 
 from collections import deque
-from nanoleaf import Aurora
+from nanoleaf.nanoleaf import Aurora
 from random import randint, choice
 
 def viz_amplitude(a):
